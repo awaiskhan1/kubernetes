@@ -14,7 +14,7 @@ spec:
   source:
     # Your Git repo URL (update this with your actual repo URL)
     # For local testing, you can use file:// path
-    repoURL: https://github.com/awaiskhan1/kubernetes.git
+    repoURL: git@github.com:awaiskhan1/kubernetes.git
     targetRevision: HEAD
     path: helm/mern-helm
     
