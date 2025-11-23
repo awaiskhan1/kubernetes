@@ -1,0 +1,94 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: lab-04-matrix-generator
+  namespace: argocd
+  labels:
+    lab: "lab-04"
+    type: "matrix-combination"
+spec:
+  # Matrix Generator: Combine multiple generators
+  # Result: apps × environments = all combinations
+  generators:
+    - matrix:
+        generators:
+          # First dimension: Applications
+          - list:
+              elements:
+                - app: frontend
+                  port: "80"
+                  image: "awais107/awaispersonal:frontend"
+                  
+                - app: backend
+                  port: "3000"
+                  image: "awais107/awaispersonal:backend"
+          
+          # Second dimension: Environments
+          - list:
+              elements:
+                - env: dev
+                  replicas: "1"
+                  namespace: lab-04-matrix-dev
+                  
+                - env: prod
+                  replicas: "2"
+                  namespace: lab-04-matrix-prod
+  
+  # This will generate 4 applications:
+  # - frontend-dev
+  # - frontend-prod
+  # - backend-dev
+  # - backend-prod
+  
+  template:
+    metadata:
+      name: 'lab-04-{{app}}-{{env}}'
+      labels:
+        lab: "lab-04"
+        app: '{{app}}'
+        environment: '{{env}}'
+        managed-by: "applicationset-matrix"
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    
+    spec:
+      project: default
+      
+      source:
+        repoURL: https://github.com/awaiskhan1/kubernetes.git
+        targetRevision: HEAD
+        path: helm/generic-app  # Generic Helm chart for any app
+        
+        helm:
+          parameters:
+            - name: app.name
+              value: '{{app}}'
+            - name: app.image
+              value: '{{image}}'
+            - name: app.port
+              value: '{{port}}'
+            - name: replicaCount
+              value: '{{replicas}}'
+            - name: environment
+              value: '{{env}}'
+      
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+          allowEmpty: false
+        
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+        
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m

@@ -1,0 +1,55 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: lab-03-parent
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    lab: "lab-03"
+    type: "parent-app"
+spec:
+  project: default
+  
+  # Source: The parent app monitors the apps/ directory
+  source:
+    repoURL: https://github.com/awaiskhan1/kubernetes.git
+    targetRevision: HEAD
+    path: k8s/lab-03-app-of-apps/apps
+    
+    # Directory configuration
+    directory:
+      recurse: true  # Recursively look for YAML files
+      jsonnet: {}
+  
+  # Destination: Parent app itself doesn't deploy resources
+  # It only creates child Application resources in argocd namespace
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  
+  # Sync policy for parent
+  syncPolicy:
+    automated:
+      prune: true      # Delete child apps if their YAML is removed
+      selfHeal: true   # Auto-sync if someone manually changes
+      allowEmpty: false
+    
+    syncOptions:
+      - CreateNamespace=false  # argocd namespace already exists
+      - ApplyOutOfSyncOnly=true  # Only sync what's out of sync
+    
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  # Ignore differences in child application status
+  ignoreDifferences:
+    - group: argoproj.io
+      kind: Application
+      jsonPointers:
+        - /status
+        - /operation

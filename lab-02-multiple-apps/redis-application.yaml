@@ -1,0 +1,64 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: lab-02-redis-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    lab: "lab-02"
+    app-type: "cache"
+spec:
+  project: default
+  
+  source:
+    # Using Bitnami Redis Helm chart
+    repoURL: https://charts.bitnami.com/bitnami
+    targetRevision: 18.6.1
+    chart: redis
+    
+    helm:
+      # Redis configuration values
+      parameters:
+        - name: auth.enabled
+          value: "false"  # Disable auth for lab simplicity
+        - name: master.persistence.enabled
+          value: "false"  # Disable persistence for lab
+        - name: replica.replicaCount
+          value: "0"      # No replicas, just master
+        - name: master.resources.requests.memory
+          value: "256Mi"
+        - name: master.resources.requests.cpu
+          value: "100m"
+        - name: master.resources.limits.memory
+          value: "512Mi"
+        - name: master.resources.limits.cpu
+          value: "200m"
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: lab-02-cache
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+    
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  # Ignore differences in certain Redis-specific fields
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      jsonPointers:
+        - /spec/volumeClaimTemplates

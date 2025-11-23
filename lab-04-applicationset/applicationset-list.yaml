@@ -1,0 +1,90 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: lab-04-multi-env
+  namespace: argocd
+  labels:
+    lab: "lab-04"
+    type: "multi-environment"
+spec:
+  # List Generator: Define multiple environments with their configs
+  generators:
+    - list:
+        elements:
+          # Development Environment
+          - environment: dev
+            namespace: lab-04-dev
+            replicas: "1"
+            ingressHost: "lab04-dev.local"
+            syncWave: "0"
+            
+          # Staging Environment
+          - environment: staging
+            namespace: lab-04-staging
+            replicas: "2"
+            ingressHost: "lab04-staging.local"
+            syncWave: "1"
+            
+          # Production Environment
+          - environment: prod
+            namespace: lab-04-prod
+            replicas: "3"
+            ingressHost: "lab04-prod.local"
+            syncWave: "2"
+  
+  # Template: How to create each application
+  template:
+    metadata:
+      name: 'lab-04-mern-{{environment}}'
+      labels:
+        lab: "lab-04"
+        environment: '{{environment}}'
+        managed-by: "applicationset"
+      annotations:
+        argocd.argoproj.io/sync-wave: '{{syncWave}}'
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    
+    spec:
+      project: default
+      
+      source:
+        repoURL: https://github.com/awaiskhan1/kubernetes.git
+        targetRevision: HEAD
+        path: helm/mern-helm
+        
+        helm:
+          valueFiles:
+            - values.yaml
+          
+          # Override values per environment
+          parameters:
+            - name: backend.replicaCount
+              value: '{{replicas}}'
+            - name: frontend.replicaCount
+              value: '{{replicas}}'
+            - name: ingress.host
+              value: '{{ingressHost}}'
+            - name: ingress.enabled
+              value: "true"
+      
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+          allowEmpty: false
+        
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+        
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m

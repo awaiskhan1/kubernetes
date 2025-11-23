@@ -1,0 +1,71 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: lab-02-mern-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    lab: "lab-02"
+    app-type: "mern-stack"
+spec:
+  project: default
+  
+  source:
+    repoURL: https://github.com/awaiskhan1/kubernetes.git
+    targetRevision: HEAD
+    path: helm/mern-helm
+    
+    helm:
+      valueFiles:
+        - values.yaml
+      
+      # Override values specifically for this lab
+      parameters:
+        - name: backend.replicaCount
+          value: "2"
+        - name: frontend.replicaCount
+          value: "2"
+        - name: ingress.host
+          value: "lab02-mern.local"
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: lab-02-mern
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+    
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  # Health assessment configuration
+  health:
+    - group: apps
+      kind: Deployment
+      check: |
+        hs = {}
+        if obj.status ~= nil then
+          if obj.status.replicas ~= nil and obj.status.updatedReplicas ~= nil and obj.status.replicas == obj.status.updatedReplicas then
+            hs.status = "Healthy"
+            hs.message = "All replicas are updated"
+          else
+            hs.status = "Progressing"
+            hs.message = "Waiting for replicas to be updated"
+          end
+        else
+          hs.status = "Progressing"
+          hs.message = "Waiting for status"
+        end
+        return hs
