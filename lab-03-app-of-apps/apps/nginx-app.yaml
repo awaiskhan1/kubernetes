@@ -16,24 +16,10 @@ spec:
   project: default
   
   source:
-    repoURL: https://charts.bitnami.com/bitnami
-    targetRevision: 15.4.4
-    chart: nginx
-    
-    helm:
-      parameters:
-        - name: replicaCount
-          value: "1"
-        - name: service.type
-          value: "ClusterIP"
-        - name: resources.requests.memory
-          value: "128Mi"
-        - name: resources.requests.cpu
-          value: "50m"
-        - name: resources.limits.memory
-          value: "256Mi"
-        - name: resources.limits.cpu
-          value: "100m"
+    # Using simple Nginx deployment from Git (workaround for Helm repo connectivity)
+    repoURL: https://github.com/awaiskhan1/kubernetes.git
+    targetRevision: HEAD
+    path: lab-03-app-of-apps/nginx-manifests
   
   destination:
     server: https://kubernetes.default.svc
