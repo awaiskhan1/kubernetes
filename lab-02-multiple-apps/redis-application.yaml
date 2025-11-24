@@ -12,8 +12,8 @@ spec:
   project: default
   
   source:
-    # Using Bitnami Redis Helm chart
-    repoURL: https://charts.bitnami.com/bitnami
+    # Using Bitnami Redis Helm chart (new Broadcom repository)
+    repoURL: oci://registry-1.docker.io/bitnamicharts
     targetRevision: 18.6.1
     chart: redis
     helm:
