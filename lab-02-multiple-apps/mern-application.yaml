@@ -49,23 +49,3 @@ spec:
         duration: 5s
         factor: 2
         maxDuration: 3m
-  
-  # Health assessment configuration
-  health:
-    - group: apps
-      kind: Deployment
-      check: |
-        hs = {}
-        if obj.status ~= nil then
-          if obj.status.replicas ~= nil and obj.status.updatedReplicas ~= nil and obj.status.replicas == obj.status.updatedReplicas then
-            hs.status = "Healthy"
-            hs.message = "All replicas are updated"
-          else
-            hs.status = "Progressing"
-            hs.message = "Waiting for replicas to be updated"
-          end
-        else
-          hs.status = "Progressing"
-          hs.message = "Waiting for status"
-        end
-        return hs
