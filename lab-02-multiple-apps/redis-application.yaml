@@ -15,7 +15,7 @@ spec:
     # Using simple Redis deployment from Git (workaround for Helm repo connectivity)
     repoURL: https://github.com/awaiskhan1/kubernetes.git
     targetRevision: HEAD
-    path: k8s/lab-02-multiple-apps/redis-manifests
+    path: lab-02-multiple-apps/redis-manifests
   
   destination:
     server: https://kubernetes.default.svc
