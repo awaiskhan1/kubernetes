@@ -16,16 +16,14 @@ spec:
     repoURL: https://charts.bitnami.com/bitnami
     targetRevision: 18.6.1
     chart: redis
-    
     helm:
-      # Redis configuration values
       parameters:
         - name: auth.enabled
-          value: "false"  # Disable auth for lab simplicity
+          value: "false"
         - name: master.persistence.enabled
-          value: "false"  # Disable persistence for lab
+          value: "false"
         - name: replica.replicaCount
-          value: "0"      # No replicas, just master
+          value: "0"
         - name: master.resources.requests.memory
           value: "256Mi"
         - name: master.resources.requests.cpu
