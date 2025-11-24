@@ -12,26 +12,10 @@ spec:
   project: default
   
   source:
-    # Using Bitnami Redis Helm chart (new Broadcom repository)
-    repoURL: oci://registry-1.docker.io/bitnamicharts
-    targetRevision: 18.6.1
-    chart: redis
-    helm:
-      parameters:
-        - name: auth.enabled
-          value: "false"
-        - name: master.persistence.enabled
-          value: "false"
-        - name: replica.replicaCount
-          value: "0"
-        - name: master.resources.requests.memory
-          value: "256Mi"
-        - name: master.resources.requests.cpu
-          value: "100m"
-        - name: master.resources.limits.memory
-          value: "512Mi"
-        - name: master.resources.limits.cpu
-          value: "200m"
+    # Using simple Redis deployment from Git (workaround for Helm repo connectivity)
+    repoURL: https://github.com/awaiskhan1/kubernetes.git
+    targetRevision: HEAD
+    path: k8s/lab-02-multiple-apps/redis-manifests
   
   destination:
     server: https://kubernetes.default.svc
