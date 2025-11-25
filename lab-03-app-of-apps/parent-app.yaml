@@ -15,7 +15,7 @@ spec:
   source:
     repoURL: https://github.com/awaiskhan1/kubernetes.git
     targetRevision: HEAD
-    path: k8s/lab-03-app-of-apps/apps
+    path: lab-03-app-of-apps/apps
     
     # Directory configuration
     directory:
