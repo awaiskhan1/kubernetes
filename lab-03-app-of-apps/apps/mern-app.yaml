@@ -26,9 +26,9 @@ spec:
       
       parameters:
         - name: backend.replicaCount
-          value: "2"
+          value: "1"
         - name: frontend.replicaCount
-          value: "2"
+          value: "1"
         - name: ingress.host
           value: "lab03-mern.local"
   
