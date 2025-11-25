@@ -29,7 +29,7 @@ backend:
     repository: "awais107/awaispersonal"
     tag: "backend"
     pullPolicy: "Always"
-  replicaCount: 3
+  replicaCount: 1
   service:
     port: 3000
   env:
@@ -40,7 +40,7 @@ frontend:
     repository: "awais107/awaispersonal"
     tag: "frontend"
     pullPolicy: "Always"
-  replicaCount: 3
+  replicaCount: 1
   service:
     port: 80
 
